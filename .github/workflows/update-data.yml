@@ -1,0 +1,72 @@
+name: Actualizar datos y publicar
+
+# Se ejecuta solo cada 6 horas, al subir cambios, y a mano desde la pestaña Actions.
+on:
+  schedule:
+    - cron: "17 */6 * * *"
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths-ignore: ["data/**", "docs/**", "**.md"]
+
+permissions:
+  contents: write     # para guardar data/*.json actualizados
+  pages: write        # para publicar
+  id-token: write
+  issues: write       # para avisar si la actualización falla
+
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: 22 }
+
+      - name: Pruebas del motor (fórmulas y pipeline)
+        run: npm test
+
+      - name: Aviso de temporada
+        run: node scripts/check-season.mjs
+
+      - name: Descargar, validar y guardar datos
+        id: upd
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: node scripts/update-data.mjs
+
+      - name: Confirmar cambios de datos
+        run: |
+          git config user.name  "pogo-companion-bot"
+          git config user.email "actions@users.noreply.github.com"
+          git add data/*.json
+          if git diff --cached --quiet; then echo "Sin cambios en los datos."; else git commit -m "datos: actualización automática $(date -u +%F' '%H:%M)"; git push; fi
+
+      - name: Abrir incidencia si algo falla
+        if: failure()
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh issue create --title "⚠️ La actualización de datos falló ($(date -u +%F))" \
+            --body "Revisa el registro: $GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID. Los datos anteriores siguen publicados. Causas típicas: una validación bloqueó cambios raros del Game Master (CPM, polvo, tipos) o una fuente cayó. Ver docs/MANTENIMIENTO.md." || true
+
+      - name: Preparar sitio
+        run: |
+          mkdir _site
+          cp -r index.html manifest.webmanifest icon.svg sw.js css js data config _site/
+      - uses: actions/upload-pages-artifact@v3
+        with: { path: _site }
+
+  deploy:
+    needs: update
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.dep.outputs.page_url }}
+    steps:
+      - id: dep
+        uses: actions/deploy-pages@v4

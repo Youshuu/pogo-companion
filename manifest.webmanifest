@@ -1,0 +1,14 @@
+{
+  "name": "PoGo Companion",
+  "short_name": "PoGo Companion",
+  "description": "IV, PvP e incursiones para Pokémon GO",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#08151C",
+  "theme_color": "#0B8F9C",
+  "lang": "es",
+  "icons": [
+    { "src": "icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any maskable" }
+  ]
+}

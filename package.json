@@ -1,0 +1,15 @@
+{
+  "name": "pogo-companion",
+  "version": "1.0.0",
+  "description": "Companion web para Pokémon GO: calculadora de IV, PvP, incursiones. Datos que se actualizan solos.",
+  "private": true,
+  "type": "commonjs",
+  "engines": { "node": ">=20" },
+  "scripts": {
+    "update": "node scripts/update-data.mjs",
+    "update:dry": "node scripts/update-data.mjs --dry",
+    "test": "node --test",
+    "serve": "node scripts/serve.mjs",
+    "build": "node scripts/build-single.mjs"
+  }
+}

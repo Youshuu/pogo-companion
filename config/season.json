@@ -1,0 +1,93 @@
+{
+  "_readme": "Archivo EDITABLE a mano cada temporada (~3 meses). Las reglas de copas y el calendario no están en el Game Master, por eso se curan aquí. La app avisa cuando la temporada termina para que lo actualices. Ver docs/MANTENIMIENTO.md",
+  "season": {
+    "name": "Twilight Trails",
+    "gblSeason": 28,
+    "start": "2026-09-08T13:00:00-07:00",
+    "end": "2026-12-01T13:00:00-08:00",
+    "verifiedAt": "2026-09-23",
+    "sources": [
+      "https://pokemongohub.net/post/pvp/go-battle-league-twilight-trails-schedule-cups-events/",
+      "https://pokemongohub.net/post/pvp/go-battle-league-twilight-trails-attack-changes-and-new-moves/"
+    ]
+  },
+  "cups": {
+    "great":        { "name": "Liga Grande", "cap": 1500 },
+    "ultra":        { "name": "Liga Ultra", "cap": 2500 },
+    "master":       { "name": "Liga Máster", "cap": 100000 },
+    "great_mega":   { "name": "Liga Grande: Edición Mega", "cap": 1500, "allowMega": true },
+    "ultra_mega":   { "name": "Liga Ultra: Edición Mega", "cap": 2500, "allowMega": true },
+    "master_mega":  { "name": "Liga Máster: Edición Mega", "cap": 100000, "allowMega": true },
+    "willpower":    { "name": "Copa Fuerza de Voluntad (Liga Grande)", "cap": 1500, "includeTypes": ["fighting", "psychic", "dark"], "bannedNames": ["Gardevoir", "Zorua", "Zoroark"], "pvpokeCup": "willpower" },
+    "retro":        { "name": "Copa Retro (Liga Grande)", "cap": 1500, "excludeTypes": ["dark", "steel", "fairy"], "pvpokeCup": "retro" },
+    "megacolor":    { "name": "Copa Mega Color (Liga Grande)", "cap": 1500, "allowMega": true, "includeTypes": ["grass", "fire", "water", "electric"] },
+    "little":       { "name": "Copa Pequeña", "cap": 500, "littleCup": true, "pvpokeCup": "little" },
+    "fantasy":      { "name": "Copa Fantasía (Liga Grande)", "cap": 1500, "includeTypes": ["dragon", "steel", "fairy"], "pvpokeCup": "fantasy" },
+    "megahalloween":{ "name": "Copa Mega Halloween (Liga Grande)", "cap": 1500, "allowMega": true, "includeTypes": ["bug", "poison", "ghost", "dark", "fairy"] },
+    "laic2026":     { "name": "Copa GO LAIC 2026", "cap": 1500, "excludeTypes": ["fire", "dark", "steel", "fairy"], "allowLegendary": false, "allowMega": false,
+                      "bannedNames": ["Chansey", "Snorlax", "Furret", "Wobbuffet", "Galarian Corsola", "Kingdra", "Medicham", "Altaria", "Dusclops", "Jellicent", "Araquanid", "Oranguru", "Annihilape", "Clodsire"] },
+    "megacatch":    { "name": "Copa Mega Captura (Liga Grande)", "cap": 1500, "allowMega": true, "note": "Solo Pokémon capturados durante la temporada; sin Míticos." }
+  },
+  "schedule": [
+    { "from": "2026-09-08T13:00:00-07:00", "to": "2026-09-15T13:00:00-07:00", "leagues": ["great_mega", "ultra_mega", "master_mega"], "stardust4x": true },
+    { "from": "2026-09-15T13:00:00-07:00", "to": "2026-09-22T13:00:00-07:00", "leagues": ["great", "ultra_mega", "willpower"] },
+    { "from": "2026-09-22T13:00:00-07:00", "to": "2026-09-29T13:00:00-07:00", "leagues": ["ultra", "master_mega", "retro"], "stardust4x": true },
+    { "from": "2026-09-29T13:00:00-07:00", "to": "2026-10-06T13:00:00-07:00", "leagues": ["master", "megacolor"], "stardust4x": true },
+    { "from": "2026-10-06T13:00:00-07:00", "to": "2026-10-13T13:00:00-07:00", "leagues": ["great_mega", "ultra_mega", "master_mega"], "stardust4x": true },
+    { "from": "2026-10-13T13:00:00-07:00", "to": "2026-10-20T13:00:00-07:00", "leagues": ["great", "ultra_mega", "little"] },
+    { "from": "2026-10-20T13:00:00-07:00", "to": "2026-10-27T13:00:00-07:00", "leagues": ["ultra", "master_mega", "fantasy"], "stardust4x": true },
+    { "from": "2026-10-27T13:00:00-07:00", "to": "2026-11-03T13:00:00-08:00", "leagues": ["master", "megahalloween"], "stardust4x": true },
+    { "from": "2026-11-03T13:00:00-08:00", "to": "2026-11-10T13:00:00-08:00", "leagues": ["great_mega", "ultra_mega", "master_mega"], "stardust4x": true },
+    { "from": "2026-11-10T13:00:00-08:00", "to": "2026-11-17T13:00:00-08:00", "leagues": ["great", "ultra_mega", "laic2026"] },
+    { "from": "2026-11-17T13:00:00-08:00", "to": "2026-11-24T13:00:00-08:00", "leagues": ["ultra", "master_mega", "laic2026"], "stardust4x": true, "note": "La fuente publica 18–25 nov; se asume martes 17 por el ciclo semanal." },
+    { "from": "2026-11-24T13:00:00-08:00", "to": "2026-12-01T13:00:00-08:00", "leagues": ["master", "megacatch"], "stardust4x": true }
+  ],
+  "moveChanges": {
+    "title": "Rebalanceo de movimientos de la temporada Twilight Trails (Trainer Battles salvo indicación)",
+    "note": "La fuente aclara que no se publicaron todos los valores exactos de energía. El actualizador reemplaza esto con los números reales del Game Master.",
+    "rows": [
+      ["Air Cutter", "flying", "Poder 45→60 · Energía 35→40 · Prob. subir Ataque 30 %→12,5 %"],
+      ["Bulldoze", "ground", "Poder 45→80 · Energía 45→55 · Baja la Defensa rival siempre"],
+      ["Body Slam", "normal", "Poder 55→65 · Energía 35→40"],
+      ["Sand Tomb", "ground", "Poder 40→55 · Energía 40→45"],
+      ["Brine", "water", "Poder 60→100 · Energía 50→60"],
+      ["Bubble Beam", "water", "Poder 25→50 · Energía 40→50"],
+      ["Mirror Coat", "psychic", "Poder 60→75 · Energía 55→45"],
+      ["High Horsepower", "ground", "Energía 60→55"],
+      ["Charge Beam", "electric", "Poder 5→6"],
+      ["Blaze Kick", "fire", "Energía 40→35"],
+      ["Iron Head", "steel", "Poder 70→85"],
+      ["Draining Kiss", "fairy", "Poder 60→80 · Sube tu Defensa siempre"],
+      ["Poison Fang", "poison", "Poder 45→50"],
+      ["Lunge", "bug", "Poder 60→70"],
+      ["Bite", "dark", "Poder 4→2 · Energía generada 2→4"],
+      ["Infestation", "bug", "Poder 6→10"],
+      ["Take Down", "normal", "Poder 5→14 · Energía generada 8→9"],
+      ["Scratch", "normal", "Poder 4→3 · Energía generada 2→4"],
+      ["Moonblast", "fairy", "Poder 110→90 · Energía 60→50"],
+      ["Shadow Ball", "ghost", "Poder 100→90"],
+      ["Dark Pulse", "dark", "Energía 50→45"],
+      ["Psycho Boost", "psychic", "PvP: Poder 70→85 · Gimnasios/incursiones: Poder 70→130 y Energía 50→33"],
+      ["Rage Fist", "ghost", "Poder 50→55 · Energía 35→40"],
+      ["Magnet Bomb", "steel", "Energía 45→40"],
+      ["Double Iron Bash", "steel", "Poder 55→70"],
+      ["Shadow Force", "ghost", "Energía 90→65"],
+      ["Low Kick", "fighting", "Poder 5→6"]
+    ]
+  },
+  "newMoves": {
+    "title": "Nuevos ataques por Pokémon (Twilight Trails)",
+    "rows": [
+      ["Volbeat", "Infestation, Lunge"], ["Illumise", "Infestation, Shadow Ball"], ["Arbok", "Brutal Swing, Wrap"],
+      ["Aerodactyl", "Brutal Swing"], ["Alolan Muk", "Brutal Swing, Ice Punch"], ["Greninja", "Brutal Swing"],
+      ["Ariados", "Foul Play"], ["Darkrai", "Foul Play, Sucker Punch"], ["Grafaiai", "Foul Play, Scratch"],
+      ["Victreebel", "Sucker Punch"], ["Audino", "Charge Beam"], ["Raichu", "Volt Tackle"], ["Alolan Raichu", "Volt Tackle"],
+      ["Grimmsnarl", "Draining Kiss"], ["Aggron", "Brick Break"], ["Zeraora", "Dynamic Punch"],
+      ["Deoxys (Defensa)", "Low Kick"], ["Kingambit", "Low Kick"], ["Gallade", "Sacred Sword"],
+      ["Houndoom", "Incinerate, Trailblaze"], ["Mismagius", "Mystical Fire"], ["Crobat", "Gust"], ["Flamigo", "Peck"],
+      ["Chandelure", "Astonish"], ["Cofagrigus", "Energy Ball"], ["Skarmory", "Drill Run"], ["Bombirdier", "Drill Run"],
+      ["Lugia", "Earth Power"], ["Miltank", "High Horsepower"], ["Nidoking", "Avalanche"], ["Ursaluna", "Scratch"],
+      ["Zoroark de Hisui", "Swift"], ["Toxtricity (Low Key / Amped)", "Swift"], ["Snorlax", "Psywave"]
+    ]
+  }
+}
