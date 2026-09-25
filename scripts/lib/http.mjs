@@ -1,6 +1,6 @@
 // http.mjs — descarga robusta: reintentos con espera creciente, timeout y metadatos de frescura.
 
-const UA = 'pogo-companion-updater/1.0 (+https://github.com/ — uso educativo)';
+const UA = 'pogo-companion-updater/1.0 (+https://github.com/ - uso educativo)';
 
 export async function sleep(ms) { return new Promise(r => setTimeout(r, ms)); }
 
