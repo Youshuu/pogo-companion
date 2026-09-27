@@ -61,7 +61,10 @@
         $('prog').hidden = false; $('bar').style.width = '0%'; $('progtxt').textContent = 'Cargando el lector de texto…';
         try {
           const Tesseract = await loadTesseract();
-          const worker = await Tesseract.createWorker('spa', 1, { logger: () => {} });
+          const worker = await Tesseract.createWorker('eng', 1, { logger: () => {} });
+          // Sin corrección por diccionario: los nombres de Pokémon no son palabras de ningún idioma,
+          // y dejar que Tesseract "corrija" hacia la palabra más parecida empeora la lectura.
+          await worker.setParameters({ load_system_dawg: '0', load_freq_dawg: '0' });
           const ocrFn = async (canvas, kind) => {
             if (kind === 'digits') await worker.setParameters({ tessedit_char_whitelist: 'PC0123456789', tessedit_pageseg_mode: '8' });
             else await worker.setParameters({ tessedit_char_whitelist: '', tessedit_pageseg_mode: '7' });
@@ -116,8 +119,8 @@
         <td>${sp ? K.orb(sp) : '<span class="orb" style="background:var(--surface-2)">?</span>'}</td>
         <td><select class="in small sp-pick" data-i="${i}">${!sp ? '<option value="">— elegir —</option>' : ''}${D.speciesSorted.map(s => `<option value="${esc(s.id)}" ${sp && sp.id === s.id ? 'selected' : ''}>${esc(s.name)}</option>`).join('')}</select>
           ${row.ambiguous ? `<div class="muted small">Nombre leído: "${esc(r.nameText)}" (dudoso)</div>` : ''}</td>
-        <td class="num">${r.cp ?? '—'}</td>
-        <td class="num">${r.hp ? (r.hp.full ? r.hp.cur : `${r.hp.cur}/${r.hp.max} ⚠︎`) : '—'}</td>
+        <td><input class="in small num cp-in" data-i="${i}" type="number" min="10" max="10000" value="${r.cp ?? ''}" style="width:78px" aria-label="PC"></td>
+        <td><input class="in small num hp-in" data-i="${i}" type="number" min="1" max="1000" value="${r.hp ? r.hp.cur : ''}" style="width:68px" aria-label="PS"></td>
         <td>${ivTxt}</td>
         <td>${flag}</td>
         <td><button class="btn small" data-save="${i}" ${one ? '' : 'disabled'}>Guardar</button> <button class="btn small" data-drop="${i}" aria-label="Descartar">✕</button></td>
@@ -126,28 +129,33 @@
 
     out.innerHTML = `<div class="card">
       <div class="row between"><h3>Resultado: ${rows.length} tarjetas detectadas</h3><span class="chip ${okCount === rows.length ? 'ok' : 'warn'}"><span class="dot"></span>${okCount}/${rows.length} listas sin revisar</span></div>
-      <p class="muted small" style="margin:6px 0 12px">Revisa las filas marcadas antes de guardar: corrige el Pokémon con el desplegable si el nombre no se leyó bien.</p>
+      <p class="muted small" style="margin:6px 0 12px">Revisa las filas marcadas antes de guardar: corrige el Pokémon con el desplegable, y el PC o los PS a mano si no se leyeron bien (ambos son editables).</p>
       <div class="table-wrap"><table><thead><tr><th></th><th>Pokémon</th><th class="r">PC</th><th class="r">PS</th><th>IV</th><th></th><th></th></tr></thead>
       <tbody id="rowsBody">${rows.map(rowHtml).join('')}</tbody></table></div>
       <div class="row" style="margin-top:14px"><button class="btn primary" id="saveAll">Guardar todas las listas (${okCount})</button></div>
     </div>`;
 
     function recompute(i) {
-      const sel = out.querySelector(`.sp-pick[data-i="${i}"]`);
+      const tr = out.querySelector(`tr[data-i="${i}"]`);
+      const sel = tr.querySelector('.sp-pick');
       const sp = D.byId.get(sel.value);
-      const r = rows[i].reading;
+      const cpVal = +tr.querySelector('.cp-in').value || null;
+      const hpVal = +tr.querySelector('.hp-in').value || null;
+      const r = { ...rows[i].reading, cp: cpVal, hp: hpVal ? { cur: hpVal, max: hpVal, full: true } : null };
       let cands = [];
       if (sp && r.cp && r.hp && r.hp.full) {
         const appraisal = {}; if (r.bars) ['atk', 'def', 'hp'].forEach(k => { if (r.bars[k] != null) appraisal[k] = r.bars[k]; });
         cands = IV.solveIVs({ base: sp.base, cp: r.cp, hp: r.hp.cur, maxLevel: 51, appraisal });
       }
       rows[i] = { reading: r, species: sp, matchScore: 1, ambiguous: false, candidates: cands };
-      out.querySelector(`tr[data-i="${i}"]`).outerHTML = rowHtml(rows[i], i);
+      tr.outerHTML = rowHtml(rows[i], i);
       bindRow(i);
     }
     function bindRow(i) {
       const tr = out.querySelector(`tr[data-i="${i}"]`); if (!tr) return;
       tr.querySelector('.sp-pick').addEventListener('change', () => recompute(i));
+      tr.querySelector('.cp-in').addEventListener('change', () => recompute(i));
+      tr.querySelector('.hp-in').addEventListener('change', () => recompute(i));
       const save = tr.querySelector('[data-save]'); if (save) save.addEventListener('click', () => {
         const row = rows[i], one = row.candidates[0];
         PoGo.box.add({ speciesId: row.species.id, name: row.species.name, iv: { atk: one.atk, def: one.def, hp: one.hp }, level: one.level, cp: row.reading.cp });

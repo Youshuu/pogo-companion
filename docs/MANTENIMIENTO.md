@@ -96,3 +96,33 @@ mano con el desplegable (los números de PC/PS los sigue usando tal cual se leye
 tiempo de ejecución; el entorno de desarrollo de este proyecto no tuvo acceso a internet para probar
 esa carga en vivo. Antes de darla por buena, procesa un vídeo real y revisa que las filas "OK" tengan
 sentido.
+
+### Corrección (26-sep-2026): sobraban Pokémon y el nombre no se leía
+
+Un usuario probó la función con un vídeo real y reportó dos síntomas: aparecían más Pokémon de los
+que había en el vídeo, y el nombre casi nunca se leía bien. Diagnóstico con ese mismo vídeo:
+
+- El rótulo "PC" se dibuja sobre el fondo animado de la escena (no sobre la tarjeta blanca), y con
+  frecuencia una de sus dos letras se lee como un dígito de más pegado delante del número real (p.
+  ej. el PC real "894" se leía a veces como "1894", "5894", "9894"...). Como `groupReadings` exigía
+  antes que el PC coincidiera EXACTO para fusionar fotogramas de la misma tarjeta, cada lectura
+  corrompida abría una fila nueva → de ahí el exceso de Pokémon.
+- Se probó primero una solución basada en "esperar a que la imagen deje de moverse" (comparar
+  fotogramas por color), pero el fondo de la escena tiene partículas que se mueven solas todo el
+  rato, así que esa señal resultó más ruidosa que útil y se descartó.
+- Arreglo real, en `js/core/scan.js`: `sameCard` ahora exige que los **PS coincidan exactos**
+  (número corto sobre fondo blanco liso, mucho más fiable) y, solo si coinciden, tolera que el PC
+  difiera nada más en dígitos de más al principio (compara las últimas 3 cifras). Nunca se fusiona
+  si los PS no coinciden, así que dos Pokémon distintos no se mezclan por casualidad. Dentro de un
+  grupo ya fusionado, se usa como PC definitivo el más CORTO que haya aparecido (la corrupción solo
+  añade dígitos, nunca los quita), no el más frecuente.
+- Se cambió el idioma del lector de texto de español a inglés (los nombres de Pokémon son en
+  inglés, sin traducir) y se desactivó la corrección por diccionario (`load_system_dawg` /
+  `load_freq_dawg`), que puede "corregir" una palabra hacia la más parecida del diccionario y
+  empeorar la lectura de nombres que no son palabras reales.
+- La tabla de resultados ahora tiene el PC y los PS como campos editables, no solo el Pokémon: si
+  alguna fila queda con un número que no se pudo corregir solo, se arregla a mano sin perder la fila.
+- Validado contra el vídeo real del reporte: bajó de 26-28 filas espurias a 19 (el número real de
+  Pokémon del vídeo), de las cuales 15 quedan con el PC exacto solo con este arreglo y las 4
+  restantes (donde nunca apareció una lectura limpia) quedan editables. Pruebas en
+  `tests/scan.test.js` con los datos reales de ese caso.

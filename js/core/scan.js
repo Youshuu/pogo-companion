@@ -81,19 +81,32 @@
 
   /**
    * ¿Son estas dos lecturas (de fotogramas consecutivos) el mismo Pokémon?
-   * El PC es la señal más estable frame a frame (dígitos puros, prefijo fijo "PC"); el nombre puede
-   * variar un poco por ruido de OCR aunque sea la misma tarjeta, así que no se exige que coincida.
+   *
+   * Los PS son la señal más fiable (número corto, sobre fondo blanco liso). El PC es más frágil:
+   * el rótulo "PC" se dibuja sobre el fondo animado de la escena, y con bastante frecuencia una de
+   * sus letras se lee como un dígito de más pegado delante del número real (p. ej. "894" → "9894",
+   * "5894", "1894"...). Por eso, si los PS coinciden exactamente, basta con que las ÚLTIMAS 3 cifras
+   * del PC coincidan (tolera cualquier dígito de más al principio) — pero NUNCA se fusiona si los PS
+   * difieren, para no mezclar por error dos Pokémon distintos que solo compartan esas últimas cifras.
    */
   function sameCard(a, b) {
-    if (!a || !b || a.cp == null || b.cp == null) return false;
-    if (a.cp !== b.cp) return false;
-    const ah = a.hp ? a.hp.cur : null, bh = b.hp ? b.hp.cur : null;
-    return ah == null || bh == null || ah === bh;
+    if (!a || !b) return false;
+    const ah = a.hp && a.hp.full ? a.hp.cur : null, bh = b.hp && b.hp.full ? b.hp.cur : null;
+    if (ah != null && bh != null) {
+      if (ah !== bh) return false;
+      if (a.cp == null || b.cp == null || a.cp === b.cp) return true;
+      const sa = String(a.cp), sb = String(b.cp);
+      return sa.slice(-3) === sb.slice(-3);
+    }
+    // Sin PS fiable en alguna de las dos: se exige el PC exacto (más conservador).
+    return a.cp != null && a.cp === b.cp;
   }
 
   /**
-   * Agrupa lecturas por fotograma consecutivas en "tarjetas" (un Pokémon = 1+ fotogramas seguidos iguales),
-   * y de cada grupo se queda con la lectura de mayor confianza (más campos leídos).
+   * Agrupa lecturas por fotograma consecutivas en "tarjetas" (un Pokémon = 1+ fotogramas seguidos iguales).
+   * Dentro de cada grupo, el nombre/especie/barras se toman de la lectura más completa, pero el PC se
+   * decide aparte: siempre el más corto que aparezca en el grupo (la corrupción de OCR solo añade
+   * dígitos de más, nunca los quita), aunque esa no sea la lectura más frecuente del grupo.
    */
   function groupReadings(readings) {
     const groups = [];
@@ -102,8 +115,16 @@
       if (last && sameCard(last[last.length - 1], r)) last.push(r);
       else groups.push([r]);
     }
-    const score = (r) => (r.cp != null) + (r.hp && r.hp.full ? 1 : 0) + (r.speciesMatch ? 1 : 0) + (r.bars ? 1 : 0);
-    return groups.map(g => g.slice().sort((a, b) => score(b) - score(a))[0]);
+    const qualityScore = (r) => (r.speciesMatch ? 100 : 0) + (r.bars ? 10 : 0);
+    return groups.map(g => {
+      const best = g.slice().sort((a, b) => qualityScore(b) - qualityScore(a))[0];
+      const cps = g.map(r => r.cp).filter(v => v != null);
+      if (!cps.length) return best;
+      const counts = new Map();
+      cps.forEach(v => counts.set(v, (counts.get(v) || 0) + 1));
+      const shortestCp = [...counts.entries()].sort((a, b) => String(a[0]).length - String(b[0]).length || b[1] - a[1])[0][0];
+      return shortestCp === best.cp ? best : { ...best, cp: shortestCp };
+    });
   }
 
   const api = { norm, parseCP, parseHP, editDistance, matchSpecies, barFractionToBucket, sameCard, groupReadings, BAR_EDGES };

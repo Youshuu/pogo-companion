@@ -39,6 +39,36 @@ test('barFractionToBucket: cubos y zona de duda cerca de los límites', () => {
   assert.equal(S.barFractionToBucket(null), null);
 });
 
+test('sameCard/groupReadings: el PC corrompido con un dígito de más se fusiona SOLO si los PS coinciden', () => {
+  // Caso real observado: "894" se lee a veces como 1894/5894/9894 en fotogramas de la MISMA tarjeta.
+  const hp113 = { cur: 113, max: 113, full: true };
+  const readings = [
+    { cp: 894, hp: hp113, nameText: 'Gible' },
+    { cp: 1894, hp: hp113, nameText: 'Gibie' },
+    { cp: 9894, hp: hp113, nameText: 'Gible' },
+    { cp: 894, hp: hp113, nameText: 'Gible' },
+  ];
+  const g = S.groupReadings(readings);
+  assert.equal(g.length, 1, 'las 4 lecturas son la misma tarjeta y deben quedar en un solo grupo');
+  assert.equal(g[0].cp, 894, 'se debe preferir el PC más corto (sin el dígito de más)');
+});
+
+test('sameCard: NUNCA fusiona dos Pokémon distintos aunque el PC coincida por casualidad en las últimas cifras', () => {
+  const a = { cp: 894, hp: { cur: 113, max: 113, full: true }, nameText: 'Gible' };
+  const b = { cp: 1894, hp: { cur: 88, max: 88, full: true }, nameText: 'Gible' }; // PS distinto: otro individuo
+  assert.equal(S.sameCard(a, b), false);
+  const readings = [a, b];
+  const g = S.groupReadings(readings);
+  assert.equal(g.length, 2, 'con PS distinto deben quedar como dos tarjetas separadas');
+});
+
+test('sameCard: exige PC exacto cuando no hay PS fiable en alguna de las dos lecturas', () => {
+  const a = { cp: 894, hp: null, nameText: 'Gible' };
+  const b = { cp: 1894, hp: null, nameText: 'Gible' };
+  assert.equal(S.sameCard(a, b), false); // sin PS, no se aplica la tolerancia del dígito de más
+  assert.equal(S.sameCard({ cp: 894, hp: null }, { cp: 894, hp: null }), true);
+});
+
 test('groupReadings: colapsa fotogramas repetidos del mismo Pokémon y se queda con la mejor lectura', () => {
   const readings = [
     { cp: 822, hp: { cur: 113, max: 113, full: true }, nameText: 'Gibie', speciesMatch: null },
@@ -49,4 +79,19 @@ test('groupReadings: colapsa fotogramas repetidos del mismo Pokémon y se queda 
   assert.equal(g.length, 2);
   assert.equal(g[0].nameText, 'Gible'); // de las dos lecturas de PC822 se queda con la que sí reconoció la especie
   assert.equal(g[1].cp, 636);
+});
+
+test('groupReadings: el PC más corto gana aunque no sea el más frecuente en el grupo', () => {
+  // Caso real observado con un Gible: 3 fotogramas leyeron "6430" (con dígito de más) y solo 1 leyó
+  // el valor correcto "430" — debe ganar igualmente, porque más corto siempre es más fiable.
+  const hp = { cur: 98, max: 98, full: true };
+  const readings = [
+    { cp: 6430, hp, nameText: 'Gible', speciesMatch: { species: { id: 'gible' } } },
+    { cp: 430, hp, nameText: 'Gible', speciesMatch: { species: { id: 'gible' } } },
+    { cp: 6430, hp, nameText: 'Gible', speciesMatch: { species: { id: 'gible' } } },
+    { cp: 6430, hp, nameText: 'Gible', speciesMatch: { species: { id: 'gible' } } },
+  ];
+  const g = S.groupReadings(readings);
+  assert.equal(g.length, 1);
+  assert.equal(g[0].cp, 430);
 });

@@ -132,10 +132,11 @@
   }
 
   /**
-   * Recorre un <video> muestreando fotogramas, evita repetir el mismo (mismo PC que el anterior)
-   * y llama a onFrame(reading|null, {t, index, total}) según avanza. onProgress(fraction) es opcional.
+   * Recorre un <video> muestreando fotogramas y llama a onProgress(fraction) según avanza.
+   * La fiabilidad frente a fotogramas de transición o ruido de OCR vive en scan.js (sameCard/
+   * groupReadings): aquí solo se recogen lecturas, sin intentar adivinar qué fotograma es "mejor".
    */
-  async function scanVideo(video, { ocrFn, stepSec = 0.5, onProgress }) {
+  async function scanVideo(video, { ocrFn, stepSec = 0.4, onProgress }) {
     const duration = video.duration || 0;
     const canvas = document.createElement('canvas');
     canvas.width = video.videoWidth; canvas.height = video.videoHeight;
