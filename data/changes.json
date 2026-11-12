@@ -1,1 +1,1 @@
-{"generatedAt":"2026-11-08T22:13:30.593Z","moves":[{"id":"KOWTOW_CLEAVE","name":"Kowtow Cleave","type":"dark","changes":[{"mode":"pve","field":"power","to":85},{"mode":"pve","field":"durationMs","to":2000},{"mode":"pve","field":"energy","to":50}]}],"newMoves":[],"removedMoves":[],"newSpecies":[],"movepool":[]}
+{"generatedAt":"2026-11-12T07:20:08.505Z","moves":[],"newMoves":[{"id":"MOONBLAST_PLUS","name":"Moonblast+"},{"id":"SOAK","name":"Soak"}],"removedMoves":[],"newSpecies":[{"id":"clefable_mega","name":"Clefable (Mega)"}],"movepool":[]}
